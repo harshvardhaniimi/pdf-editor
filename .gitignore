@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+qa/
+artifacts/
+.netlify/
+.openai/
+.env
+.env.*
+!.env.example
+/dist/vendor/
+/dist/source.zip

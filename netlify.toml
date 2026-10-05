@@ -1,0 +1,9 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# All application code, PDF/OCR engines, and language data are static assets.
+# No Netlify Functions, external APIs, or document upload endpoints are needed.

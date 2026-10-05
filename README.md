@@ -7,12 +7,14 @@ A self-contained browser PDF editor, ready to deploy on Netlify. PDF documents, 
 Serve `dist/` using an HTTP server, for example:
 
 ```sh
+npm ci
+npm run build
 python -m http.server 5173 --directory dist
 ```
 
 Open http://localhost:5173 in a current Chrome, Edge, Firefox or Safari browser. ES modules and WebAssembly require HTTP(S); opening index.html via file:// is not supported. Only Chromium has been exercised in the automated browser checks.
 
-All runtime libraries, WASM binaries and the English OCR model are bundled. Initial app and engine loading requires access to the hosting origin, then document operations are local. No server-side PDF processing exists.
+The build bundles all runtime libraries, WASM binaries and the English OCR model from the pinned npm dependencies. Initial app and engine loading requires access to the hosting origin, then document operations are local. No server-side PDF processing exists.
 
 ## Deploy to Netlify
 
@@ -28,9 +30,11 @@ that name, choose another name you approve. Do not replace an existing site
 unless it is the intended destination.
 
 For Git-connected deployment, connect a repository containing this project.
-The included `netlify.toml` selects `dist` and runs JavaScript syntax checks.
-All runtime assets are already committed; no build-time secrets or backend
-services are required. Netlify account authentication is separate from a GitHub
+The included `netlify.toml` selects `dist` and runs `npm run build` after Netlify
+installs the locked dependencies. This copies the local PDF/OCR engines and
+English model, generates the source download, and checks JavaScript syntax.
+No build-time secrets or backend services are required. Netlify account
+authentication is separate from a GitHub
 repository connection, even when GitHub is used to sign in to Netlify.
 
 The deploy ZIP contains only public application assets, open-source notices,
@@ -70,7 +74,7 @@ PDFs up to 150 MB can be opened; browser memory limits may be lower. Images abov
 - `dist/vendor/mupdf/`: pinned MuPDF engine, v1.28.1.
 - `dist/vendor/ocr/`: Tesseract.js and its WASM LSTM core.
 - `dist/vendor/lang/eng.traineddata.gz`: bundled English recognition model.
-- `scripts/package-source.py`: creates the user-downloadable source package without documents or credentials.
+- `scripts/package-source.mjs`: creates the user-downloadable source package without documents or credentials, using Node alone.
 
 ## Validation
 

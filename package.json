@@ -1,0 +1,21 @@
+{
+  "name": "folio-local-pdf-editor",
+  "version": "1.0.0",
+  "description": "A browser-only PDF editor with direct text editing and local OCR",
+  "scripts": {
+    "build": "node scripts/restore-vendor.mjs && node scripts/package-source.mjs && node --check dist/app.js && node --check dist/engine-core.js && node --check dist/engine.js",
+    "start": "python -m http.server 5173 --directory dist",
+    "restore-vendor": "node scripts/restore-vendor.mjs",
+    "package-source": "node scripts/package-source.mjs",
+    "package-netlify": "npm run build && python3 scripts/package-netlify.py"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "dependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
+    "mupdf": "^1.28.1",
+    "tesseract.js": "^7.0.0"
+  }
+}
