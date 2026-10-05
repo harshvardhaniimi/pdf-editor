@@ -8,8 +8,8 @@ const paths = [
   'netlify.toml', 'scripts/archive.mjs', 'scripts/package-source.mjs',
   'scripts/package-source.py', 'scripts/package-netlify.py',
   'scripts/restore-vendor.mjs', 'dist/index.html', 'dist/style.css',
-  'dist/fonts.css', 'dist/app.js', 'dist/engine.js', 'dist/engine-core.js',
-  'dist/licenses.html', 'dist/LICENSE.txt',
+  'dist/fonts.css', 'dist/app.js', 'dist/engine.js', 'dist/engine-core.js', 'dist/text-style.js',
+  'dist/licenses.html', 'dist/LICENSE.txt', 'tests/text-style.test.mjs',
 ];
 const entries = await Promise.all(paths.map(async path => ({
   name: 'pdf-editor/' + path,

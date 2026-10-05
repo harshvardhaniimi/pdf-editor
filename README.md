@@ -44,7 +44,7 @@ metadata, node_modules, and the previous hosting provider's configuration.
 ## Features
 
 - Open and drag/drop PDFs; unlock password-protected documents with a supplied password.
-- Click horizontal PDF text lines to replace text. Original text is removed using content redaction, then replacement FreeText annotations are added. Font family, size, color and box width can be changed.
+- Click horizontal PDF text to replace it. Text with different fonts or colors is edited in separate runs. Original text is removed using content redaction, then replacement FreeText annotations are added. The original PDF font, size, color and baseline are retained where available, with an accurate PDF-rendered preview. You can choose another font, change the size or color, or load a full TTF/OTF font from your device.
 - Add text, PNG/JPEG/WebP images, freehand ink, handwritten signature images, highlights, rectangles, ellipses, cosmetic whiteout and actual area redaction.
 - Select, move, resize and delete added objects. Image corner resizing preserves aspect ratio unless Shift is held.
 - Fill standard AcroForm text, choice, checkbox and radio fields.
@@ -56,7 +56,7 @@ metadata, node_modules, and the previous hosting provider's configuration.
 
 ## Limits
 
-This is not a universal desktop-prepress replacement. Existing content is edited by line, not by automatic paragraph reflow. Original embedded fonts are not reused for replacement text; built-in fallback fonts may change metrics. Rotated text, complex scripts, vertical writing, advanced typography, XFA forms and certificate-based signing are limited or unsupported. Existing digital signatures may be invalidated by editing.
+This is not a universal desktop-prepress replacement. Existing content is edited by line, not by automatic paragraph reflow. Embedded PDF fonts are reused. Subset fonts may lack new characters; the editor asks you to load the full font locally or explicitly choose a replacement instead of silently substituting one. Fonts absent from a PDF can only use the font available to the PDF renderer. Scans carry no font information, so OCR cannot recover their exact typography. Rotated text, complex scripts, vertical writing, advanced typography, XFA forms and certificate-based signing are limited or unsupported. Existing digital signatures may be invalidated by editing.
 
 OCR is English only and operates on the current page, best with clear upright printed scans. Handwriting and complex layouts may be inaccurate. OCR edits erase image pixels and use a white background; always inspect the result. A searchable text layer is not automatically added to every unedited OCR line.
 
@@ -71,6 +71,7 @@ PDFs up to 150 MB can be opened; browser memory limits may be lower. Images abov
 - `dist/index.html`, `dist/style.css`, `dist/app.js`: editor UI and interaction state.
 - `dist/engine.js`: asynchronous PDF worker and message queue.
 - `dist/engine-core.js`: PDF rendering, extraction, mutation and export.
+- `dist/text-style.js`: retained PDF fonts, style extraction, glyph validation and text previews.
 - `dist/vendor/mupdf/`: pinned MuPDF engine, v1.28.1.
 - `dist/vendor/ocr/`: Tesseract.js and its WASM LSTM core.
 - `dist/vendor/lang/eng.traineddata.gz`: bundled English recognition model.
@@ -87,3 +88,5 @@ Native WebMCP is feature-detected. The available QA browser does not expose the 
 Folio is distributed under **GNU AGPL-3.0-or-later** because it incorporates MuPDF. Preserve the source download and license notices when distributing a modified version. A proprietary closed-source distribution needs a separately licensed PDF engine or an appropriate commercial MuPDF license.
 
 MuPDF is Copyright Artifex Software, Inc. and contributors. Tesseract.js and Tesseract.js-core are Apache-2.0. English language data is from tesseract-ocr/tessdata. See `dist/licenses.html` and the bundled license files for notices and links to exact upstream source releases. Runtime dependencies are pinned in `package-lock.json`.
+
+Run `npm test` after `npm run build` for font/color regression checks, including subset fonts, export/reopen, adjacent styles, movement and undo. Set `PDF_EDITOR_TEST_FONT=/path/to/font.ttf` to also exercise a local TrueType/OpenType font; that file is not uploaded or bundled.
