@@ -50,4 +50,12 @@ test('font uploads are local, used for export, and font handles expire on a new 
   await e('demo');await assert.rejects(e('textPreview',args(l)),/reload its PDF font/);
 });
 
+test('changing a built-in-font edit after undo does not reuse deleted font resources',async()=>{
+  const d=new M.PDFDocument();d.insertPage(-1,d.addPage([0,0,612,792],0,{},''));const b=d.saveToBuffer('');await e('open',{data:b.asUint8Array().slice()});b.destroy();d.destroy();
+  const a={page:0,rect:[50,50,300,100],font:'Helv',size:20,color:'#1255cc',text:'First text'};
+  await e('text',a);await e('undo');await e('text',{...a,text:'After undo'});
+  const added=(await e('info',{page:0})).annots[0];assert(added.style.font);assert.equal(added.style.color,a.color);
+  const data=await e('export',{flatten:true});await e('open',{data});const line=(await e('info',{page:0})).lines.find(v=>v.text==='After undo');assert(line?.font);assert.equal(line.color,a.color);
+});
+
 if(process.env.PDF_EDITOR_TEST_FIXTURE)await writeFile(process.env.PDF_EDITOR_TEST_FIXTURE,fixture());

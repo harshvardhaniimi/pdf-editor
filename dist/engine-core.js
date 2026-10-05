@@ -9,14 +9,15 @@ function metadata(){return {count:doc.countPages(),undo:doc.canUndo(),redo:doc.c
 function initialize(d){resetFonts();doc?.destroy();doc=d;doc.disableJS();doc.enableJournal();return metadata();}
 function mutate(name,fn){doc.beginOperation(name+' #'+(++operationId));try{fn();doc.endOperation();return metadata();}catch(e){doc.abandonOperation();throw e;}}
 function annotate(p,type,r){const a=p.createAnnotation(type);if(a.hasRect())a.setRect(r);a.setFlags(M.PDFAnnotation.IS_PRINT);a.setAuthor('Folio');a.setName('folio-'+Date.now()+'-'+Math.random().toString(36).slice(2,7));return a;}
-function addText(p,arg,appearance){const r=appearance?.rect||arg.rect,a=annotate(p,'FreeText',r);a.setContents(arg.text||'');a.setBorderWidth(0);a.setColor([]);a.setDefaultAppearance(arg.font==='original'?'Helv':arg.font||'Helv',+arg.size||16,color(arg.color));
- if(appearance){
-  // Build font resources in a temporary document. MuPDF's PDF font cache can
-  // otherwise retain references to objects removed by undo and a new edit.
-  const scratch=new M.PDFDocument();let sp,sa,stream;
-  try{scratch.insertPage(-1,scratch.addPage([0,0,612,792],0,{},''));sp=scratch.loadPage(0);sa=sp.createAnnotation('FreeText');sa.setRect(r);sa.setAppearanceFromDisplayList(null,null,I,appearance.list);const ap=sa.getObject().get('AP','N'),matrix=ap.get('Matrix'),bbox=ap.get('BBox').asJS();stream=ap.readStream();a.setAppearance(null,null,matrix.isNull()?I:matrix.asJS(),bbox,doc.graftObject(ap.get('Resources')),stream);}
-  finally{stream?.destroy();if(sp)clearPage(sp);scratch.destroy();}
- }else a.update();return a;}
+function addText(p,arg,appearance){const r=appearance?.rect||arg.rect,a=annotate(p,'FreeText',r),font=arg.font==='original'?'Helv':arg.font||'Helv',size=+arg.size||16,rgb=color(arg.color);a.setContents(arg.text||'');a.setBorderWidth(0);a.setColor([]);a.setDefaultAppearance(font,size,rgb);
+ // Build all text appearances in a temporary document. MuPDF's PDF font
+ // cache can retain references to objects removed by undo and a new edit.
+ const scratch=new M.PDFDocument();let sp,stream;
+ try{scratch.insertPage(-1,scratch.addPage([0,0,612,792],0,{},''));sp=scratch.loadPage(0);const sa=sp.createAnnotation('FreeText');sa.setRect(r);
+  if(appearance)sa.setAppearanceFromDisplayList(null,null,I,appearance.list);
+  else{sa.setContents(arg.text||'');sa.setBorderWidth(0);sa.setColor([]);sa.setDefaultAppearance(font,size,rgb);sa.update();}
+  const ap=sa.getObject().get('AP','N'),matrix=ap.get('Matrix'),bbox=ap.get('BBox').asJS();stream=ap.readStream();a.setAppearance(null,null,matrix.isNull()?I:matrix.asJS(),bbox,doc.graftObject(ap.get('Resources')),stream);
+ }finally{stream?.destroy();if(sp)clearPage(sp);scratch.destroy();}return a;}
 function removeArea(p,r,scan=false,black=false){const a=annotate(p,'Redact',r);a.setColor(black?[0]:[1]);a.update();p.applyRedactions(black,scan?2:0,0,0);}
 function moveText(a,r){const ap=a.getObject().get('AP','N');if(!ap.isStream()){a.setRect(r);return;}const stream=ap.readStream(),matrix=ap.get('Matrix'),bbox=ap.get('BBox').asJS(),resources=ap.get('Resources');try{a.setRect(r);a.setAppearance(null,null,matrix.isNull()?I:matrix.asJS(),bbox,resources,stream);}finally{stream.destroy();}}
 function getInfo(index){const p=doc.loadPage(index), list=p.toDisplayList(false);let lines;try{lines=readTextRuns(list);}finally{list.destroy();}
